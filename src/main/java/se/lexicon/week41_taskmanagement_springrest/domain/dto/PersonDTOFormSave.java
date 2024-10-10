@@ -2,8 +2,6 @@ package se.lexicon.week41_taskmanagement_springrest.domain.dto;
 
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -12,6 +10,5 @@ import java.util.List;
 @Builder
 public class PersonDTOFormSave {
     private String name;
-    private List<TaskDTOForm> taskList;
     private UserDTOForm user;
 }

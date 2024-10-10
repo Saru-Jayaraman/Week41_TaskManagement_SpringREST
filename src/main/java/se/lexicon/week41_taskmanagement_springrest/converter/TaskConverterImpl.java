@@ -62,6 +62,32 @@ public class TaskConverterImpl implements TaskConverter {
     }
 
     @Override
+    public TaskDTOForm toTaskDTOForm(Task entity) {
+        PersonDTOForm personDTO = null;
+        if(entity.getPerson() != null)
+            personDTO = personConverter.toPersonDTOFormEntity(entity.getPerson());
+        return TaskDTOForm.builder()
+                .id(entity.getId())
+                .title(entity.getTitle())
+                .description(entity.getDescription())
+                .done(entity.isDone())
+                .deadLine(entity.getDeadLine())
+                .person(personDTO)
+                .build();
+    }
+
+    @Override
+    public TaskDTOFormView toTaskDTOViewWithoutPerson(Task entity) {
+        return TaskDTOFormView.builder()
+                .id(entity.getId())
+                .title(entity.getTitle())
+                .description(entity.getDescription())
+                .done(entity.isDone())
+                .description(entity.getDescription())
+                .build();
+    }
+
+    @Override
     public TaskDTOFormView toTaskDTOViewForm(TaskDTOForm dto) {
         PersonDTOFormView personDTO = personConverter.toPersonDTOView(dto.getPerson());
         return TaskDTOFormView.builder()
@@ -85,21 +111,6 @@ public class TaskConverterImpl implements TaskConverter {
                 .description(dto.getDescription())
                 .done(dto.isDone())
                 .deadLine(dto.getDeadLine())
-                .person(personDTO)
-                .build();
-    }
-
-    @Override
-    public TaskDTOForm toTaskDTOFormEntity(Task entity) {
-        PersonDTOForm personDTO = null;
-        if(entity.getPerson() != null)
-            personDTO = personConverter.toPersonDTOFormEntity(entity.getPerson());
-        return TaskDTOForm.builder()
-                .id(entity.getId())
-                .title(entity.getTitle())
-                .description(entity.getDescription())
-                .done(entity.isDone())
-                .deadLine(entity.getDeadLine())
                 .person(personDTO)
                 .build();
     }

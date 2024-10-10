@@ -25,7 +25,7 @@ public class Person {
     @OneToMany(mappedBy = "person")
     @Setter private List<Task> taskList;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "email")
     @Setter private User user;
 

@@ -32,5 +32,5 @@ public interface TaskService {
 
     List<TaskDTOFormView> addTaskToPerson(Long personId, TaskDTOForm... taskDTOForm);
 
-    void removeTaskFromPerson(Long personId, TaskDTOForm... taskDTOForm);
+    void removeTaskFromPerson(Long personId, List<TaskDTOForm> dto);
 }

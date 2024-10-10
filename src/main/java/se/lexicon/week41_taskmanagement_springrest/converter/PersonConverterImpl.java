@@ -7,32 +7,29 @@ import se.lexicon.week41_taskmanagement_springrest.domain.dto.*;
 import se.lexicon.week41_taskmanagement_springrest.domain.entity.Person;
 import se.lexicon.week41_taskmanagement_springrest.domain.entity.Task;
 import se.lexicon.week41_taskmanagement_springrest.domain.entity.User;
+import se.lexicon.week41_taskmanagement_springrest.repository.TaskRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class PersonConverterImpl implements PersonConverter {
 
-    RoleConverter roleConverter;
-    UserConverter userConverter;
-    TaskConverter taskConverter;
+    private final TaskRepository taskRepository;
+    private final UserConverter userConverter;
+    private final TaskConverter taskConverter;
 
     @Autowired
-    public PersonConverterImpl(@Lazy RoleConverter roleConverter, @Lazy UserConverter userConverter, @Lazy TaskConverter taskConverter) {
-        this.roleConverter = roleConverter;
+    public PersonConverterImpl(@Lazy UserConverter userConverter, @Lazy TaskConverter taskConverter, TaskRepository taskRepository) {
         this.userConverter = userConverter;
         this.taskConverter = taskConverter;
+        this.taskRepository = taskRepository;
     }
 
     @Override
     public Person toPersonEntitySave(PersonDTOFormSave dto) {
         User userEntity = userConverter.toUserEntityWithoutRoles(dto.getUser());
-        List<Task> taskEntities = null;
-        if(dto.getTaskList() != null)
-            taskEntities = dto.getTaskList()
-                                .stream()
-                                .map(task -> taskConverter.toTaskForm(task))
-                                .toList();
+        List<Task> taskEntities = new ArrayList<>();
         return Person.builder()
                 .name(dto.getName())
                 .user(userEntity)
@@ -47,7 +44,7 @@ public class PersonConverterImpl implements PersonConverter {
         if (dto.getTaskList() != null)
             taskEntities = dto.getTaskList()
                             .stream()
-                            .map(task -> taskConverter.toTaskForm(task))
+                            .map(taskConverter::toTaskForm)
                             .toList();
         return Person.builder()
                 .id(dto.getId())
@@ -60,10 +57,17 @@ public class PersonConverterImpl implements PersonConverter {
     @Override
     public PersonDTOFormView toPersonDTOView(Person entity) {
         UserDTOView userDTO = userConverter.toUserDTOView(entity.getUser());
+        List<TaskDTOFormView> taskDTOs = new ArrayList<>();
+        List<Task> taskEntities;
+        taskEntities = taskRepository.findByPerson_Id(entity.getId());
+        for(Task eachTask : taskEntities) {
+            taskDTOs.add(taskConverter.toTaskDTOViewWithoutPerson(eachTask));
+        }
         return PersonDTOFormView.builder()
                 .id(entity.getId())
                 .name(entity.getName())
                 .user(userDTO)
+                .taskList(taskDTOs)
                 .build();
     }
 
@@ -84,7 +88,7 @@ public class PersonConverterImpl implements PersonConverter {
         if (dto.getTaskList() != null)
             taskDTOs = dto.getTaskList()
                 .stream()
-                .map(task -> taskConverter.toTaskDTOForm(task))
+                .map(taskConverter::toTaskDTOForm)
                 .toList();
         return PersonDTOForm.builder()
                 .id(dto.getId())

@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
         Set<Role> roleEntities = userDTOForm.getRoles()
                 .stream()
                 .map(userDTO -> roleRepository.findById(userDTO.getId())
-                        .orElseThrow(() -> new DataNotFoundException("Role is not valid")))
+                        .orElseThrow(() -> new DataNotFoundException("Role is not valid...")))
                 .collect(Collectors.toSet());
         //4. Convert UserDTOForm to User entity
         //5. Hash the password

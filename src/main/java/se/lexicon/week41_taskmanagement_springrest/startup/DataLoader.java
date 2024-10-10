@@ -47,12 +47,12 @@ public class DataLoader implements CommandLineRunner {
     @Transactional
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("------------------------------ROLE SERVICE------------------------------");
-        System.out.println("----------------------------------SAVE----------------------------------");
         RoleDTOFormSave roleDTOForm1 = new RoleDTOFormSave("ADMIN");
         RoleDTOFormSave roleDTOForm2 = new RoleDTOFormSave("USER");
         RoleDTOFormSave roleDTOForm3 = new RoleDTOFormSave("GUEST");
 
+        System.out.println("------------------------------ROLE SERVICE------------------------------");
+        System.out.println("----------------------------------SAVE----------------------------------");
         RoleDTOFormView roleDTOView1 = roleService.saveRole(roleDTOForm1);
         roleService.saveRole(roleDTOForm2);
         roleService.saveRole(roleDTOForm3);
@@ -76,29 +76,29 @@ public class DataLoader implements CommandLineRunner {
         UserDTOForm userDTOForm1 = new UserDTOForm("test1@gmail.com", "test1", Set.of(allRolesForm.get(1), allRolesForm.get(2)));
         UserDTOForm userDTOForm2 = new UserDTOForm("test2@gmail.com", "test2", Set.of(allRolesForm.get(2)));
 
-        UserDTOView userDTOView1 = userService.register(userDTOForm1);
-        UserDTOView userDTOView2 = userService.register(userDTOForm2);
-        System.out.println(userDTOView1);
-        System.out.println(userDTOView2);
+//        UserDTOView userDTOView1 = userService.register(userDTOForm1);
+//        UserDTOView userDTOView2 = userService.register(userDTOForm2);
+//        System.out.println(userDTOView1);
+//        System.out.println(userDTOView2);
 
         System.out.println("-----------------------------UPDATE PASSWORD----------------------------");
-        userService.updatePassword(userDTOForm1.getEmail(), "test11");
+//        userService.updatePassword(userDTOForm1.getEmail(), "test11");
 
         System.out.println("-----------------------------DISABLE EXPIRED----------------------------");
-        userService.disableByEmail(userDTOForm1.getEmail());
+//        userService.disableByEmail(userDTOForm1.getEmail());
 
         System.out.println("-------------------------------GET BY EMAIL-----------------------------");
-        UserDTOView getRoleByEmail = userService.getByEmail(userDTOForm1.getEmail());
-        System.out.println(getRoleByEmail);
+//        UserDTOView getRoleByEmail = userService.getByEmail(userDTOForm1.getEmail());
+//        System.out.println(getRoleByEmail);
 
         System.out.println("-----------------------------ENABLE EXPIRED-----------------------------");
-        userService.enableByEmail(userDTOForm1.getEmail());
+//        userService.enableByEmail(userDTOForm1.getEmail());
         System.out.println();
 
         System.out.println("-----------------------------PERSON SERVICE-----------------------------");
         System.out.println("----------------------------------SAVE----------------------------------");
-        PersonDTOFormSave person1 = new PersonDTOFormSave("Person1", null, userDTOForm1);
-        PersonDTOFormSave person2 = new PersonDTOFormSave("Person2", null, userDTOForm2);
+        PersonDTOFormSave person1 = new PersonDTOFormSave("Person1", userDTOForm1);//Cascade.All
+        PersonDTOFormSave person2 = new PersonDTOFormSave("Person2", userDTOForm2);//Cascade.All
 
         PersonDTOFormView personDTOView1 = personService.savePerson(person1);
         PersonDTOFormView personDTOView2 = personService.savePerson(person2);
@@ -166,7 +166,7 @@ public class DataLoader implements CommandLineRunner {
         allPersonsWithoutTasks.forEach(System.out::println);
 
         System.out.println("-------------------------REMOVE TASK FROM PERSON------------------------");
-        taskService.removeTaskFromPerson(personDTOView1.getId(), taskConverter.toTaskDTOForm(taskDTOView3));
+        taskService.removeTaskFromPerson(personDTOView1.getId(), List.of(taskConverter.toTaskDTOForm(taskDTOView3)));
         System.out.println("Task removed successfully!!!");
 
         System.out.println("-----------------------FIND PERSONS WITH NO TASKS-----------------------");

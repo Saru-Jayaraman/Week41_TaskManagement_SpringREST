@@ -2,6 +2,7 @@ package se.lexicon.week41_taskmanagement_springrest.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.lexicon.week41_taskmanagement_springrest.converter.PersonConverter;
 import se.lexicon.week41_taskmanagement_springrest.converter.TaskConverter;
 import se.lexicon.week41_taskmanagement_springrest.domain.dto.TaskDTOForm;
@@ -128,31 +129,38 @@ public class TaskServiceImpl implements TaskService {
         List<TaskDTOFormView> views = new ArrayList<>();
 
         for(TaskDTOForm eachTaskForm : dto) {
+            taskRepository.findById(eachTaskForm.getId())
+                    .orElseThrow(() -> new DataNotFoundException("Task not found..."));
+            Task entity = taskConverter.toTaskForm(eachTaskForm);
             //Adding Task to Person -> Then update
-            person.addTask(taskConverter.toTaskForm(eachTaskForm));
+            person.addTask(entity);
             Person savedPerson = personRepository.save(person);
 
             //Adding Person to Task -> Then update
             eachTaskForm.setPerson(personConverter.toPersonDTOFormEntity(savedPerson));
-            update(eachTaskForm);
+            Task modifiedEntity = taskConverter.toTaskForm(eachTaskForm);
+            taskRepository.save(modifiedEntity);
             views.add(taskConverter.toTaskDTOViewForm(eachTaskForm));
         }
         return views;
     }
 
     @Override
-    public void removeTaskFromPerson(Long personId, TaskDTOForm... dto) {
+    @Transactional
+    public void removeTaskFromPerson(Long personId, List<TaskDTOForm> dto) {
         Person person = personRepository.findById(personId)
                 .orElseThrow(() -> new DataNotFoundException("Person not found with id: " + personId));
 
         for(TaskDTOForm eachTaskForm : dto) {
+            Task entity = taskConverter.toTaskForm(eachTaskForm);
             //Removing Task from Person -> Then update
-            person.removeTask(taskConverter.toTaskForm(eachTaskForm));
+            person.removeTask(entity);
             personRepository.save(person);
 
             //Removing Person from Task -> Then update
             eachTaskForm.setPerson(null);
-            update(eachTaskForm);
+            Task modifiedEntity = taskConverter.toTaskForm(eachTaskForm);
+            taskRepository.save(modifiedEntity);
         }
     }
 }

@@ -12,9 +12,11 @@ public interface TaskConverter {
 
     TaskDTOFormView toTaskDTOView(Task entity);
 
+    TaskDTOFormView toTaskDTOViewWithoutPerson(Task entity);
+
     TaskDTOFormView toTaskDTOViewForm(TaskDTOForm dto);
 
     TaskDTOForm toTaskDTOForm(TaskDTOFormView dto);
 
-    TaskDTOForm toTaskDTOFormEntity(Task entity);
+    TaskDTOForm toTaskDTOForm(Task entity);
 }

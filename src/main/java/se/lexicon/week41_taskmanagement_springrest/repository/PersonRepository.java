@@ -1,8 +1,10 @@
 package se.lexicon.week41_taskmanagement_springrest.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import se.lexicon.week41_taskmanagement_springrest.domain.entity.Person;
 
 import java.util.List;
@@ -16,4 +18,10 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     //Find Person by User email
     Optional<Person> findByUser_Email(String email);
+
+    //Update Person name
+    @Transactional
+    @Modifying
+    @Query("update Person p set p.name = :name where p.id = :id")
+    void updatePersonNameById(Long id, String name);
 }
