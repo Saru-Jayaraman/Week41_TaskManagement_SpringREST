@@ -1,8 +1,12 @@
 package se.lexicon.week41_taskmanagement_springrest.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import se.lexicon.week41_taskmanagement_springrest.domain.entity.Person;
 import se.lexicon.week41_taskmanagement_springrest.domain.entity.Task;
 
 import java.time.LocalDate;
@@ -31,4 +35,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     //Select all unfinished and overdue tasks
     @Query("select t from Task t where t.done = false and t.deadLine < current_date")
     List<Task> findByDoneFalseAndDeadLineAfter();
+
+    @Modifying
+    @Transactional
+    @Query("update Task t set t.title = :title, t.description = :description, t.done = :done, t.person = :person where t.id = :id")
+    void updateTask(@Param("id") Long id, @Param("title") String title, @Param("description") String description
+            , @Param("done") boolean done, @Param("person") Person person);
+
+    boolean existsByPerson_Id(Long personId);
 }

@@ -18,6 +18,7 @@ import se.lexicon.week41_taskmanagement_springrest.service.TaskService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -55,8 +56,10 @@ public class TaskServiceImpl implements TaskService {
     public void update(TaskDTOForm dto) {
         taskRepository.findById(dto.getId())
                 .orElseThrow(() -> new DataNotFoundException("Task not found..."));
-        Task entity = taskConverter.toTaskForm(dto);
-        taskRepository.save(entity);
+        Task taskEntity = taskConverter.toTaskForm(dto);
+        Person personEntity = personConverter.toPersonEntityForm(dto.getPerson());
+        taskRepository.updateTask(taskEntity.getId(), taskEntity.getTitle(), taskEntity.getDescription(),
+                                    taskEntity.isDone(), personEntity);
     }
 
     @Override
@@ -76,6 +79,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskDTOFormView> findByPersonId(Long personId) {
+        if(!taskRepository.existsByPerson_Id(personId)) {
+            throw new DataNotFoundException("Person does not have any assigned tasks...");
+        }
         List<Task> taskEntities = taskRepository.findByPerson_Id(personId);
         List<TaskDTOFormView> taskDTOViews = new ArrayList<>();
         taskEntities.forEach(eachTask -> taskDTOViews.add(taskConverter.toTaskDTOView(eachTask)));
@@ -130,7 +136,8 @@ public class TaskServiceImpl implements TaskService {
 
         for(TaskDTOForm eachTaskForm : dto) {
             taskRepository.findById(eachTaskForm.getId())
-                    .orElseThrow(() -> new DataNotFoundException("Task not found..."));
+                    .orElseThrow(() -> new DataNotFoundException("Create the task before adding the same to the person... " +
+                            "Task not found with the id: " + eachTaskForm.getId()));
             Task entity = taskConverter.toTaskForm(eachTaskForm);
             //Adding Task to Person -> Then update
             person.addTask(entity);
@@ -152,6 +159,15 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new DataNotFoundException("Person not found with id: " + personId));
 
         for(TaskDTOForm eachTaskForm : dto) {
+            List<Task> tasks = taskRepository.findByPerson_Id(personId);
+            if(Objects.requireNonNull(tasks).isEmpty()) {
+                throw new DataNotFoundException("No tasks found for the person with id: " + personId);
+            }
+            Task foundTaskEntity = taskRepository.findById(eachTaskForm.getId())
+                    .orElseThrow(() -> new DataNotFoundException("Task not found to remove with the id: " + eachTaskForm.getId()));
+            if(!Objects.equals(foundTaskEntity.getPerson().getId(), personId)) {
+                throw new DataNotFoundException("Task with id: "+ eachTaskForm.getId() +" was not assigned for the person: " + personId);
+            }
             Task entity = taskConverter.toTaskForm(eachTaskForm);
             //Removing Task from Person -> Then update
             person.removeTask(entity);

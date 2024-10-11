@@ -178,7 +178,7 @@ public class DataLoader implements CommandLineRunner {
         taskService.findByTaskContainTitle(title).forEach(System.out::println);
 
         System.out.println("---------------------------FIND BY PERSON ID----------------------------");
-        taskService.findByPersonId(personDTOView2.getId()).forEach(System.out::println);
+        taskService.findByPersonId(personDTOView1.getId()).forEach(System.out::println);
 
         System.out.println("--------------------------FIND BY DONE STATUS---------------------------");
         boolean done = true;
