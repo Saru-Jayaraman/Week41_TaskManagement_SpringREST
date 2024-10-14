@@ -1,6 +1,7 @@
 package se.lexicon.week41_taskmanagement_springrest.domain.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -12,6 +13,7 @@ import lombok.*;
 @ToString
 @Builder
 public class RoleDTOForm {
+    @NotNull(message = "Role Id is required")
     @PositiveOrZero(message = "Id must be a positive number or zero")
     private Long id;
 

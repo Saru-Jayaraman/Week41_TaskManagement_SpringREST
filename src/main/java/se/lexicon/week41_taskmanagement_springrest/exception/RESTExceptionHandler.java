@@ -1,5 +1,6 @@
 package se.lexicon.week41_taskmanagement_springrest.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -27,8 +28,21 @@ public class RESTExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity<ErrorDTO> handleConstraintViolationException(ConstraintViolationException ex) {
+        StringBuilder details = new StringBuilder();
+        ex.getConstraintViolations().forEach(constraintError ->{
+            details.append(constraintError.getPropertyPath().toString());
+            details.append(": ");
+            details.append(constraintError.getMessage());
+            details.append(", ");
+        });
+        ErrorDTO responseBody = new ErrorDTO(HttpStatus.BAD_REQUEST, details.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+    }
+
     @ExceptionHandler({DataNotFoundException.class, DataDuplicateException.class, IllegalArgumentException.class})
-    public ResponseEntity<ErrorDTO> handleCustomException(Exception e) {
+    public ResponseEntity<ErrorDTO> handleCustomExceptions(Exception e) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         if(e instanceof DataNotFoundException) {
             status = HttpStatus.NOT_FOUND;

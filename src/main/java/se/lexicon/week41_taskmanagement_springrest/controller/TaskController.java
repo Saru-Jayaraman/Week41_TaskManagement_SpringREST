@@ -1,8 +1,13 @@
 package se.lexicon.week41_taskmanagement_springrest.controller;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import se.lexicon.week41_taskmanagement_springrest.domain.dto.*;
 import se.lexicon.week41_taskmanagement_springrest.service.TaskService;
@@ -12,6 +17,7 @@ import java.util.List;
 
 @RequestMapping("/api/v1/tasks")
 @RestController
+@Validated
 public class TaskController {
 
     TaskService taskService;
@@ -22,13 +28,13 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskDTOFormView> doRegisterTask(@RequestBody TaskDTOFormSave taskDTO) {
+    public ResponseEntity<TaskDTOFormView> doRegisterTask(@RequestBody @Valid TaskDTOFormSave taskDTO) {
         TaskDTOFormView responseBody = taskService.saveTask(taskDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
     }
 
-    @PutMapping
-    public ResponseEntity<Void> doEditTask(@RequestBody TaskDTOForm taskDTO) {
+    @PutMapping("/editTask")
+    public ResponseEntity<Void> doEditTask(@RequestBody @Valid TaskDTOForm taskDTO) {
         taskService.update(taskDTO);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -40,31 +46,36 @@ public class TaskController {
     }
 
     @GetMapping("/fetchById")
-    public ResponseEntity<TaskDTOFormView> doGetTaskById(@RequestParam Long taskId) {
+    public ResponseEntity<TaskDTOFormView> doGetTaskById(@RequestParam @PositiveOrZero(message = "Id cannot hold negative value") Long taskId) {
         TaskDTOFormView responseBody = taskService.findById(taskId);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @GetMapping("/fetchByTitle")
-    public ResponseEntity<List<TaskDTOFormView>> doGetByTitle(String title) {
+    public ResponseEntity<List<TaskDTOFormView>> doGetByTitle(@RequestParam @NotBlank(message = "Title is required") String title) {
         List<TaskDTOFormView> responseBody = taskService.findByTaskContainTitle(title);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @GetMapping("/fetchByPersonId")
-    public ResponseEntity<List<TaskDTOFormView>> doGetTaskByPersonId(@RequestParam Long personId) {
+    public ResponseEntity<List<TaskDTOFormView>> doGetTaskByPersonId(@RequestParam @PositiveOrZero(message = "Id cannot hold negative value") Long personId) {
         List<TaskDTOFormView> responseBody = taskService.findByPersonId(personId);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @GetMapping("/fetchByStatus")
-    public ResponseEntity<List<TaskDTOFormView>> doGetTasksByStatus(@RequestParam boolean status) {
+    public ResponseEntity<List<TaskDTOFormView>> doGetTasksByStatus(@RequestParam
+                                                                    @NotNull(message = "Status is required")
+                                                                    @JsonDeserialize(using = NumberDeserializers.BooleanDeserializer.class)
+                                                                    Boolean status) {
         List<TaskDTOFormView> responseBody = taskService.findByDone(status);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @GetMapping("/fetchBetween")
-    public ResponseEntity<List<TaskDTOFormView>> doGetTaskBetweenDates(@RequestParam LocalDate start, @RequestParam LocalDate end) {
+    public ResponseEntity<List<TaskDTOFormView>> doGetTaskBetweenDates
+    (@RequestParam @NotNull(message = "Start date is required") LocalDate start,
+     @RequestParam @NotNull(message = "End date is required") LocalDate end) {
         List<TaskDTOFormView> responseBody = taskService.findByDeadLineBetween(start, end);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
@@ -88,13 +99,19 @@ public class TaskController {
     }
 
     @PutMapping("/addTask")
-    public ResponseEntity<List<TaskDTOFormView>> doAddTasks(@RequestParam Long personId, @RequestBody TaskDTOForm... taskDTO) {
+    public ResponseEntity<List<TaskDTOFormView>> doAddTasks(@RequestParam
+                                                            @PositiveOrZero(message = "Id cannot hold negative value")
+                                                            Long personId,
+                                                            @RequestBody @Valid TaskDTOForm... taskDTO) {
         List<TaskDTOFormView> responseBody = taskService.addTaskToPerson(personId, taskDTO);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @PutMapping("/removeTask")
-    public ResponseEntity<List<TaskDTOFormView>> doRemoveTasks(@RequestParam Long personId, @RequestBody List<TaskDTOForm> taskDTO) {
+    public ResponseEntity<List<TaskDTOFormView>> doRemoveTasks(@RequestParam
+                                                               @PositiveOrZero(message = "Id cannot hold negative value")
+                                                               Long personId,
+                                                               @RequestBody @Valid List<TaskDTOForm> taskDTO) {
         taskService.removeTaskFromPerson(personId, taskDTO);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
