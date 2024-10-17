@@ -1,6 +1,7 @@
 package se.lexicon.week41_taskmanagement_springrest.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import se.lexicon.week41_taskmanagement_springrest.converter.UserConverter;
 import se.lexicon.week41_taskmanagement_springrest.domain.dto.UserDTOForm;
@@ -9,8 +10,10 @@ import se.lexicon.week41_taskmanagement_springrest.domain.entity.Role;
 import se.lexicon.week41_taskmanagement_springrest.domain.entity.User;
 import se.lexicon.week41_taskmanagement_springrest.exception.DataDuplicateException;
 import se.lexicon.week41_taskmanagement_springrest.exception.DataNotFoundException;
+import se.lexicon.week41_taskmanagement_springrest.exception.EmailServiceFailedException;
 import se.lexicon.week41_taskmanagement_springrest.repository.RoleRepository;
 import se.lexicon.week41_taskmanagement_springrest.repository.UserRepository;
+import se.lexicon.week41_taskmanagement_springrest.service.EmailService;
 import se.lexicon.week41_taskmanagement_springrest.service.UserService;
 import se.lexicon.week41_taskmanagement_springrest.util.CustomPasswordEncoder;
 
@@ -25,13 +28,15 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     UserConverter userConverter;
     CustomPasswordEncoder customPasswordEncoder;
+    EmailService emailService;
 
     @Autowired
-    public UserServiceImpl(RoleRepository roleRepository, UserRepository userRepository, UserConverter userConverter, CustomPasswordEncoder customPasswordEncoder) {
+    public UserServiceImpl(RoleRepository roleRepository, UserRepository userRepository, UserConverter userConverter, CustomPasswordEncoder customPasswordEncoder, EmailService emailService) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.userConverter = userConverter;
         this.customPasswordEncoder = customPasswordEncoder;
+        this.emailService = emailService;
     }
 
     @Override
@@ -53,6 +58,12 @@ public class UserServiceImpl implements UserService {
         User userEntity = userConverter.toUserEntity(userDTOForm, roleEntities);
         //6. Save User to the DB
         User savedUser = userRepository.save(userEntity);
+        //todo: Send a Welcome Email when registered a new user
+        HttpStatusCode statusCode = emailService.sendRegistrationEmail(userDTOForm.getEmail());
+        if(!statusCode.is2xxSuccessful()) {
+            System.out.println("Status code: " + statusCode);
+            throw new EmailServiceFailedException("EMAIL NOT SENT!!!");
+        }
         //7. Convert the repository result to UserDTOView
         //8. return the result
         return userConverter.toUserDTOView(savedUser);
