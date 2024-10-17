@@ -1,5 +1,8 @@
 package se.lexicon.week41_taskmanagement_springrest.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,12 @@ public class UserController {
 //    2. @PathVariable -> http://localhost:8080/api/v1/users/test1@gmail.com
 //    @GetMapping("/{email}")
 //    public ResponseEntity<UserDTOView> getByEmail(@PathVariable String email) {
+    @Operation(summary = "Register a new user & Generate email to the registered user",
+            description = "* Creates a new user in the database table.\n* Send a registration email by calling Email Sender Microservice.\n* 2 java backend applications namely, TODO API and Email Sender API are connected using RESTTemplate.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User is created and Email is sent successfully."),
+            @ApiResponse(responseCode = "400", description = "Invalid input.")
+    })
     @PostMapping
     public ResponseEntity<UserDTOView> doRegisterUser(@RequestBody @Valid UserDTOForm userDTO) {
         UserDTOView responseBody = userService.register(userDTO);
