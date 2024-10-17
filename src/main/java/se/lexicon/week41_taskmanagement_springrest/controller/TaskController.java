@@ -15,6 +15,7 @@ import se.lexicon.week41_taskmanagement_springrest.service.TaskService;
 import java.time.LocalDate;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000") // Replace with your frontend URL
 @RequestMapping("/api/v1/tasks")
 @RestController
 @Validated

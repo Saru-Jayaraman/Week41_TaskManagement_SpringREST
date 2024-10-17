@@ -11,6 +11,7 @@ import se.lexicon.week41_taskmanagement_springrest.domain.dto.UserDTOForm;
 import se.lexicon.week41_taskmanagement_springrest.domain.dto.UserDTOView;
 import se.lexicon.week41_taskmanagement_springrest.service.UserService;
 
+@CrossOrigin(origins = "http://localhost:3000") // Replace with your frontend URL
 @RequestMapping("/api/v1/users")
 @RestController
 @Validated
